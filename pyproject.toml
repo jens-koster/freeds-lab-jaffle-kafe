@@ -1,0 +1,23 @@
+[project]
+name = "freeds-lab-jaffle-kafe"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "freeds@jensbox.se"}
+]
+license = {text = "GNU v 3"}
+readme = "README.md"
+requires-python = ">=3.11"
+
+[tool.poetry]
+packages = [
+    { include = "jafkafe", from = "src" }
+]
+
+[tool.poetry.dependencies]
+jafgen = { path = "../../jaffle-shop-generator", develop = true }
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
