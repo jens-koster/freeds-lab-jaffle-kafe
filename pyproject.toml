@@ -7,7 +7,7 @@ authors = [
 ]
 license = {text = "GNU v 3"}
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11, <4.0"
 
 [tool.poetry]
 packages = [
@@ -16,6 +16,7 @@ packages = [
 
 [tool.poetry.dependencies]
 jafgen = { path = "../../jaffle-shop-generator", develop = true }
+loguru = "^0.7.3"
 
 
 [build-system]

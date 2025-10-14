@@ -13,7 +13,7 @@ from jafgen.stores.inventory import Inventory
 from jafgen.stores.market import Market
 from jafgen.stores.stock import Stock
 from jafgen.stores.store import Store
-
+from loguru import logger
 defdict = dict[str, typing.Any]
 optdefdict = defdict | None
 
@@ -35,12 +35,13 @@ class State:
         self.customers[customer_id] = customer_id
 
 def init_sim():
-    s = Simulation(years=0, days=100,prefix = "dummy")
+    s = Simulation(years=0, days=4,prefix = "dummy")
     s.run_simulation()
     orders = s.orders
     orders.sort(key=lambda x: x.day.date)
+    customers = {c.id: c.to_dict() for c in s.customers.values()}
     sim_data = {
-        "customers": s.customers,
+        "customers": customers,
         "orders": [order.to_dict() for order in orders],
         "stores" : [market.store.to_dict() for market in s.markets],
         "supplies" : Stock().to_dict(),
@@ -74,14 +75,14 @@ def ffwd(orders: dictlist, order_id:str) -> int:
             return index + 1
     raise ValueError(f"Order id {order_id} not found in orders")
 
+
 def dispatch_order(order: defdict):
-    print(f"Sending order: {order}")
+    logger.info(f"Sending order: {order['id']} at {order['ordered_at']}")
 
 def dispatch_customer(customer: defdict):
-    print(f"Sending customer: {customer}")
+    logger.info(f"Sending customer: {customer['id']}")
 
-
-
+# init_sim()
 if not (Files.jaffle_file.exists() and Files.state_file.exists()):
     init_sim()
 state = load_data(Files.state_file)
@@ -89,10 +90,12 @@ sim_data:defdict = load_data(Files.jaffle_file)
 
 index = ffwd(sim_data["orders"], state.last_sent_order_id)
 while True:
+    order_cnt = 0
     now = dt.datetime.now(ZoneInfo("Europe/Stockholm")).replace(tzinfo=None).isoformat()
     for o in sim_data["orders"][index:]:
         # let time "pass" until we reach a future order
         if o["ordered_at"] >= now:
+            logger.info(f"No more orders to send, next order {o['id']} at {o['ordered_at']}")
             break
         # we're sending this order
         # send customer if it is the first time we see it
@@ -102,7 +105,8 @@ while True:
             dispatch_customer(customer_data)
             state.add_customer(customer_id)
         dispatch_order(o)
+        order_cnt += 1
         state.last_sent_order_id = o["id"]
         index += 1
-
+    logger.info(f"Sent {order_cnt} orders")
     sleep(10)
