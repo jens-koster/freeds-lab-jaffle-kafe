@@ -1,0 +1,19 @@
+services:
+  jafkafe:
+    build: .
+    image: freeds/jafkafe:latest
+    container_name: jafkafe
+    environment:
+      FREEDS_CONFIG_URL: ${FREEDS_CONFIG_URL}
+      FREEDS_ROOT_PATH: "/opt"
+    volumes:
+      - "${FREEDS_ROOT_PATH}/data/jafkafe:/opt/data/jafkafe"
+    networks:
+      - freeds-network
+
+networks:
+  freeds-network:
+    name: freeds-network
+    external: true
+
+
