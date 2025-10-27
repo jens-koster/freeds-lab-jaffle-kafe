@@ -5,7 +5,9 @@ services:
     container_name: jafkafe
     environment:
       FREEDS_CONFIG_URL: ${FREEDS_CONFIG_URL}
+      FREEDS_KAFKA_BOOTSTRAP_SERVERS : ${FREEDS_KAFKA_BOOTSTRAP_SERVERS}
       FREEDS_ROOT_PATH: "/opt"
+
     volumes:
       - "${FREEDS_ROOT_PATH}/data/jafkafe:/opt/data/jafkafe"
     networks:
@@ -15,5 +17,3 @@ networks:
   freeds-network:
     name: freeds-network
     external: true
-
-

@@ -14,14 +14,16 @@ def get_producer() -> Producer:
 
     if _producer is None:
         # Kafka configuration
+        bootstraps = os.environ.get('FREEDS_KAFKA_BOOTSTRAP_SERVERS')
         config = {
-            'bootstrap.servers': os.environ.get('KAFKA_BOOTSTRAP_SERVERS', 'localhost:9092'),
+            'bootstrap.servers': bootstraps,
             'client.id': 'jafkafe-simulator',
             'acks': 'all',  # Wait for all replicas to acknowledge
             'retries': 3,   # Retry failed sends
-            'delivery.timeout.ms': 30000,  # 30 second timeout
-            'request.timeout.ms': 5000,    # 5 second request timeout
+            'delivery.timeout.ms': 30000,  # milliseconds
+            'request.timeout.ms': 5000,    # milliseconds
         }
+        logger.info(f'Attempting to connect to kafka cluster through{bootstraps}')
 
         try:
             _producer = Producer(config)
@@ -42,7 +44,7 @@ def delivery_report(err, msg):
 def send_message(topic: str, message: dict, key: str = None):
     """Send a message to Kafka topic"""
     producer = get_producer()
-
+    logger.info(f"Send message topic {topic}, key: {key}")
     try:
         # Serialize message to JSON
         value = json.dumps(message).encode('utf-8')
@@ -81,35 +83,32 @@ def close_producer():
 
 
 def dispatch_order(order: defdict):
-    """Send order data to Kafka"""
-    try:
-        topic = os.environ.get('KAFKA_ORDERS_TOPIC', 'orders')
-        order_id = order.get('id', 'unknown')
-
-        send_message(
-            topic=topic,
-            message=order,
-            key=order_id
-        )
-
-        logger.info(f"Sent order: {order_id} at {order.get('ordered_at')} to topic {topic}")
-
-    except Exception as e:
-        logger.error(f"Failed to dispatch order {order.get('id')}: {e}")
+    """Send one order to Kafka"""
+    topic = 'orders'
+    order_id = order['id']
+    send_message(
+        topic=topic,
+        message=order,
+        key=order_id
+    )
 
 def dispatch_customer(customer: defdict):
-    """Send customer data to Kafka"""
-    try:
-        topic = os.environ.get('KAFKA_CUSTOMERS_TOPIC', 'customers')
-        customer_id = customer.get('id', 'unknown')
+    """Send one customer to Kafka"""
+    topic = 'customers'
+    customer_id = customer['id']
+    send_message(
+        topic=topic,
+        message=customer,
+        key=customer_id
+    )
 
-        send_message(
-            topic=topic,
-            message=customer,
-            key=customer_id
-        )
 
-        logger.info(f"Sent customer: {customer_id} to topic {topic}")
-
-    except Exception as e:
-        logger.error(f"Failed to dispatch customer {customer.get('id')}: {e}")
+# if __name__ == '__main__':
+#     # Example usage
+#     sample_order = {
+#         'id': 'order_123',
+#         'customer_id': 'cust_456',
+#         'msg': 'Sample order message'
+#     }
+#     dispatch_order(sample_order)
+#     flush_producer()

@@ -17,9 +17,11 @@ packages = [
 [tool.poetry.dependencies]
 jafkafegen = ">0.4.18"
 loguru = "^0.7.3"
-freeds = "^0.2.24"
 confluent-kafka = "^2.12.0"
 
+
+[tool.poetry.group.dev.dependencies]
+freeds = "^0.2.24"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

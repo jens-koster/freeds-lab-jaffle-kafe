@@ -19,7 +19,7 @@ def ffwdt(orders: dictlist) -> int:
 
 def ffwd(orders: dictlist, order_id:str) -> int:
     if not order_id:
-        return 0
+        return ffwdt(orders)
     for index in range(0,len(orders)-1):
         if orders[index]["id"] == order_id:
             return index + 1
@@ -34,11 +34,13 @@ def run_simulator():
     index = ffwd(sim_data["orders"], state.last_sent_order_id)
     while True:
         order_cnt = 0
-        now = dt.datetime.now(ZoneInfo("Europe/Stockholm")).replace(tzinfo=None).isoformat()
         for o in sim_data["orders"][index:]:
             # let time "pass" until we reach a future order
-            if o["ordered_at"] >= now:
-                logger.info(f"No more orders to send, next order {o['id']} at {o['ordered_at']}")
+            now_dt = dt.datetime.now(ZoneInfo("Europe/Stockholm")).replace(tzinfo=None)
+            o_dt = dt.datetime.fromisoformat(o["ordered_at"])
+            secs = (o_dt - now_dt).total_seconds()
+            if secs > 0:
+                logger.info(f"Sent {order_cnt} orders, next order in {int(secs)} seconds")
                 break
             # we're sending this order
             # also send customer data if it is the first time we see it
@@ -50,7 +52,7 @@ def run_simulator():
             order_cnt += 1
             state.last_sent_order_id = o["id"]
             index += 1
-        logger.info(f"Sent {order_cnt} orders")
+
         if order_cnt>0:
             datagen.save_state()
         sleep(10)
