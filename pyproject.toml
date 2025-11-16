@@ -21,7 +21,7 @@ confluent-kafka = "^2.12.0"
 
 
 [tool.poetry.group.dev.dependencies]
-freeds = "^0.2.24"
+freeds = "^0.2.25"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

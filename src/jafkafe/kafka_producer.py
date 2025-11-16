@@ -3,7 +3,7 @@ import os
 from confluent_kafka import Producer
 from loguru import logger
 from jafkafe.datatypes import defdict
-
+from jafkafe.constants import topics
 
 # Global producer instance
 _producer = None
@@ -84,7 +84,7 @@ def close_producer():
 
 def dispatch_order(order: defdict):
     """Send one order to Kafka"""
-    topic = 'orders'
+    topic = topics.orders
     order_id = order['id']
     send_message(
         topic=topic,
@@ -94,7 +94,7 @@ def dispatch_order(order: defdict):
 
 def dispatch_customer(customer: defdict):
     """Send one customer to Kafka"""
-    topic = 'customers'
+    topic = topics.customers
     customer_id = customer['id']
     send_message(
         topic=topic,

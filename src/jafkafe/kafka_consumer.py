@@ -5,8 +5,7 @@ from loguru import logger
 from jafkafe.datatypes import defdict
 
 
-_consumer = None
-
+_consumer:Consumer = None
 
 def get_consumer() -> Consumer:
     """Get a kafka consumer instance (singleton pattern)"""
@@ -31,6 +30,32 @@ def get_consumer() -> Consumer:
 
     return _consumer
 
+def rewind(consumer: Consumer):
+    """
+    Rewind the consumer to read from the first message of each assigned partition.
+    """
+    # Get the currently assigned partitions
+    assigned_partitions = consumer.assignment()
+
+    if not assigned_partitions:
+        logger.warning("No partitions assigned to the consumer. Cannot rewind.")
+        return
+
+    # Set the offset to the beginning for each assigned partition
+    for tp in assigned_partitions:
+        tp.offset = 0  # Offset 0 is the first message in the partition
+
+    # Reassign the consumer to the updated partitions
+    consumer.assign(assigned_partitions)
+
+
+def assign_all_partitions(consumer: Consumer, topic: str):
+    """
+    Assign the consumer to all partitions of the given topic.
+    """
+    partitions = get_partitions(topic)
+    consumer.assign(partitions)
+    logger.info(f"Assigned to all partitions of topic '{topic}': {partitions}")
 
 def close_consumer():
     """Gracefully close the consumer."""
@@ -78,11 +103,13 @@ def get_head(topic):
     # For each partition, get the high watermark offset (end)
     last_msgs = []
     for tp in topic_partitions:
-        _, high = consumer.get_watermark_offsets(tp)
-        if high == 0:
+        low, high = consumer.get_watermark_offsets(tp)
+        logger.debug(f"Topic: {topic} Partition {tp.partition}: Low={low}, High={high}, Messages={high-low}")
+        if high-low <= 0:
             continue  # no messages in this partition
         # Seek to the last existing offset (high - 1)
         tp.offset = high - 1
+
         consumer.assign([tp])
         msg = consumer.poll(timeout=1.0)
         if msg and not msg.error():
@@ -100,5 +127,3 @@ def get_head(topic):
         value = msg.value().decode('utf-8')
 
     return defdict(value)
-
-print(get_head('customers'))
