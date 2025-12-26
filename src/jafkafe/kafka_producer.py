@@ -14,7 +14,7 @@ def get_producer() -> Producer:
 
     if _producer is None:
         # Kafka configuration
-        bootstraps = os.environ.get('FREEDS_KAFKA_BOOTSTRAP_SERVERS')
+        bootstraps = os.environ.get('FDS_KAFKA_BOOTSTRAP_SERVERS')
         config = {
             'bootstrap.servers': bootstraps,
             'client.id': 'jafkafe-simulator',

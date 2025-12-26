@@ -11,7 +11,7 @@ from jafkafe.datatypes import defdict, dictlist
 
 @dataclass(frozen=True)
 class Files:
-    data_dir = Path(f"{os.environ.get('FREEDS_ROOT_PATH')}/data/jafkafe")
+    data_dir = Path(f"{os.environ.get('FDS_ROOT_PATH')}/data/jafkafe")
     jaffle_file = data_dir / "jaffle_data.pkl"
 
 def save_data(file_path:Path, data: typing.Any):

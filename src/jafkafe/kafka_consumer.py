@@ -12,7 +12,7 @@ def get_consumer() -> Consumer:
     global _consumer
 
     if _consumer is None:
-        bootstraps = os.environ.get('FREEDS_KAFKA_BOOTSTRAP_SERVERS')
+        bootstraps = os.environ.get('FDS_KAFKA_BOOTSTRAP_SERVERS')
         config = {
             'bootstrap.servers': bootstraps,
             'group.id': 'jafkafe-consumer',
